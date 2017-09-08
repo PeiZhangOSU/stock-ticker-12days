@@ -11,15 +11,18 @@ import os
 
 app = Flask(__name__)
 
-@app.route('/')
+@app.route('/', methods=['GET', 'POST'])
 def plot_price():
-    # TODO: possible arguments - stock (ticker name), column (which data to plot), start & end dates?
-
-
-
-    # TODO: stock should be the ticker chosen by user
-    STOCK = 'AAPL'
-    COLUMN = 'adj. close'
+    if request.method == 'GET':
+        # default plot when loaded
+        STOCK = 'GOOG'
+        COLUMNS_TO_PLOT = ['adj. close']
+    else:
+        STOCK = request.form['ticker']
+        if STOCK == '':
+            STOCK = 'GOOG'
+        # checkbox request form results returns [u'string']
+        COLUMNS_TO_PLOT = [str(s) for s in request.form.getlist('features')]
 
     def minus_one_month(current_date):
         '''return YYYY-MM-DD for current_date minus one month.'''
@@ -42,6 +45,12 @@ def plot_price():
     raw_data = session.get(api_url)
 
     data = raw_data.json()
+    # handling Quanle error
+    if 'quandl_error' in data:
+        error_msg = data['quandl_error']['message']
+        error_code = data['quandl_error']['code']
+        return render_template('quandl_error.html', error_code=error_code, error_msg=error_msg)
+
     columns = data['dataset']['column_names']
     # Load tabular price data into df_data
     df_data = json_normalize(data['dataset'], 'data')
@@ -49,19 +58,18 @@ def plot_price():
     df_data.columns = [name.lower() for name in columns]
     df_data['date'] = pd.to_datetime(df_data['date'])
 
-    # TODO: could be multiple columns
-    plot = figure(title='Data from Quandle WIKI set',
+
+    plot = figure(title='Stock Ticker: {}'.format(STOCK),
                   x_axis_label='date',
                   x_axis_type='datetime')
-    plot.line(df_data['date'], df_data[COLUMN], legend=STOCK)
+    colors = ['#e69f00', '#56b4e9', '#009e73', '#d55e00']
+
+    for i in range(len(COLUMNS_TO_PLOT)):
+        COLUMN = COLUMNS_TO_PLOT[i]
+        plot.line(df_data['date'], df_data[COLUMN], line_color=colors[i], legend=COLUMN)
 
     script, div = components(plot)
     return render_template('graph.html', script=script, div=div)
-
-
-# @app.route('/')
-# def index():
-#   return render_template('index.html')
 
 
 #if __name__ == '__main__':
