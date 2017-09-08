@@ -66,7 +66,9 @@ def plot_price():
 
     for i in range(len(COLUMNS_TO_PLOT)):
         COLUMN = COLUMNS_TO_PLOT[i]
-        plot.line(df_data['date'], df_data[COLUMN], line_color=colors[i], legend=COLUMN)
+        plot.line(df_data['date'], df_data[COLUMN], line_color=colors[i], line_width=3, alpha=0.5, legend=COLUMN)
+
+    plot.legend.location = "top_center"
 
     script, div = components(plot)
     return render_template('graph.html', script=script, div=div)
