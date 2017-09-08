@@ -39,27 +39,33 @@ def plot_price():
     session = requests.Session()
     session.mount('http://', requests.adapters.HTTPAdapter(max_retries=3))
     raw_data = session.get(api_url)
+    return raw_data.text
 
-    data = raw_data.json()
-    columns = data['dataset']['column_names']
-    # Load tabular price data into df_data
-    df_data = json_normalize(data['dataset'], 'data')
-    df_data.columns = columns
-    df_data['Date'] = pd.to_datetime(df_data['Date'])
+    # data = raw_data.json()
+    # columns = data['dataset']['column_names']
+    # # Load tabular price data into df_data
+    # df_data = json_normalize(data['dataset'], 'data')
+    # df_data.columns = columns
+    # df_data['Date'] = pd.to_datetime(df_data['Date'])
+    #
+    # plot = figure(title='Data from Quandle WIKI set',
+    #               x_axis_label='date',
+    #               x_axis_type='datetime')
+    # plot.line(df_data['Date'], df_data[COLUMN], legend=STOCK)
+    #
+    # script, div = components(plot)
+    # return render_template('graph.html', script=script, div=div)
 
-    plot = figure(title='Data from Quandle WIKI set',
-                  x_axis_label='date',
-                  x_axis_type='datetime')
-    plot.line(df_data['Date'], df_data[COLUMN], legend=STOCK)
-
-    script, div = components(plot)
-    return render_template('graph.html', script=script, div=div)
-    #return render_template('index.html')
 
 # @app.route('/')
 # def index():
 #   return render_template('index.html')
 
 
-if __name__ == '__main__':
-  app.run(port=33507)
+#if __name__ == '__main__':
+  #app.run(port=33507)
+
+# Binding PORT for Heroku deployment
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host='0.0.0.0', port=port)
