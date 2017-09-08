@@ -45,6 +45,7 @@ def plot_price():
     # Load tabular price data into df_data
     df_data = json_normalize(data['dataset'], 'data')
     df_data.columns = columns
+    df_data['Date'] = pd.to_datetime(df_data['Date'])
 
     plot = figure(title='Data from Quandle WIKI set',
                   x_axis_label='date',
