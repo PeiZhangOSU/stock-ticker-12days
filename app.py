@@ -6,6 +6,7 @@ import pandas as pd
 from pandas.io.json import json_normalize
 import datetime
 from calendar import monthrange
+import os
 # from __future__ import print_function
 
 app = Flask(__name__)
@@ -35,26 +36,25 @@ def plot_price():
     start_date = minus_one_month(current_time)
 
     api_url = 'https://www.quandl.com/api/v3/datasets/WIKI/{}.json'.format(STOCK) + \
-              '?start_date={}&end_date={}'.format(start_date, end_date)
+              '?start_date={}&end_date={}&api_key={}'.format(start_date, end_date, os.environ.get('API_KEY', ''))
     session = requests.Session()
     session.mount('http://', requests.adapters.HTTPAdapter(max_retries=3))
     raw_data = session.get(api_url)
-    return raw_data.text
 
-    # data = raw_data.json()
-    # columns = data['dataset']['column_names']
-    # # Load tabular price data into df_data
-    # df_data = json_normalize(data['dataset'], 'data')
-    # df_data.columns = columns
-    # df_data['Date'] = pd.to_datetime(df_data['Date'])
-    #
-    # plot = figure(title='Data from Quandle WIKI set',
-    #               x_axis_label='date',
-    #               x_axis_type='datetime')
-    # plot.line(df_data['Date'], df_data[COLUMN], legend=STOCK)
-    #
-    # script, div = components(plot)
-    # return render_template('graph.html', script=script, div=div)
+    data = raw_data.json()
+    columns = data['dataset']['column_names']
+    # Load tabular price data into df_data
+    df_data = json_normalize(data['dataset'], 'data')
+    df_data.columns = columns
+    df_data['Date'] = pd.to_datetime(df_data['Date'])
+
+    plot = figure(title='Data from Quandle WIKI set',
+                  x_axis_label='date',
+                  x_axis_type='datetime')
+    plot.line(df_data['Date'], df_data[COLUMN], legend=STOCK)
+
+    script, div = components(plot)
+    return render_template('graph.html', script=script, div=div)
 
 
 # @app.route('/')
