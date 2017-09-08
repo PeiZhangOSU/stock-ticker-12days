@@ -19,7 +19,7 @@ def plot_price():
 
     # TODO: stock should be the ticker chosen by user
     STOCK = 'AAPL'
-    COLUMN = 'Adj. Close'
+    COLUMN = 'adj. close'
 
     def minus_one_month(current_date):
         '''return YYYY-MM-DD for current_date minus one month.'''
@@ -45,13 +45,15 @@ def plot_price():
     columns = data['dataset']['column_names']
     # Load tabular price data into df_data
     df_data = json_normalize(data['dataset'], 'data')
-    df_data.columns = columns
-    df_data['Date'] = pd.to_datetime(df_data['Date'])
+    # Change all column names to lowercase
+    df_data.columns = [name.lower() for name in columns]
+    df_data['date'] = pd.to_datetime(df_data['date'])
 
+    # TODO: could be multiple columns
     plot = figure(title='Data from Quandle WIKI set',
                   x_axis_label='date',
                   x_axis_type='datetime')
-    plot.line(df_data['Date'], df_data[COLUMN], legend=STOCK)
+    plot.line(df_data['date'], df_data[COLUMN], legend=STOCK)
 
     script, div = components(plot)
     return render_template('graph.html', script=script, div=div)
